@@ -1,0 +1,22 @@
+# {{Project Name}} — Flutter Project
+
+本專案遵守團隊統一的 Flutter 開發規範（[`flutter-conventions`](https://github.com/hey-jason404/flutter-conventions)）。
+
+## 規範來源
+
+@shared/flutter-conventions/conventions.md
+
+> ⚠️ 上方路徑 `shared/flutter-conventions/` 是預設建議。如果你 mount submodule 在不同位置（例如 `src/docs/conventions/`），請對應修改此處的 path。
+
+## Project Context
+
+<!--
+此處填**這個 repo 的背景資訊**（不是規範，是 context）。
+範例：
+- 此 app 不支援 web platform
+- 此 app 業務領域是 X，feature 命名以 `<prefix>_` 開頭
+- 此 repo 對應 backend repo 是 `<repo-name>`
+- 此 app 的目標 Flutter 版本是 3.x
+-->
+
+(暫無)

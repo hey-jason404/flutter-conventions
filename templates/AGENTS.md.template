@@ -1,0 +1,20 @@
+# {{Project Name}} — Flutter Project
+
+本專案遵守團隊統一的 Flutter 開發規範（[`flutter-conventions`](https://github.com/hey-jason404/flutter-conventions)）。
+
+## 必讀規範
+
+修改任何 `.dart` 檔案前，**你必須先讀**：
+
+1. `shared/flutter-conventions/conventions.md`（主索引 + 不可妥協規則）
+2. 主索引對照表中對應你任務的詳細規範檔
+
+> ⚠️ 上方路徑 `shared/flutter-conventions/` 是預設建議。如果你 mount submodule 在不同位置（例如 `src/docs/conventions/`），請對應修改此處的 path。
+
+## Project Context
+
+<!--
+此處填**這個 repo 的背景資訊**（不是規範，是 context）。
+-->
+
+(暫無)
