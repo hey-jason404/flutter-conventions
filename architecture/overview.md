@@ -220,9 +220,9 @@ features/
 
 // ❌ sub-feature nesting
 features/
-└── lobby/
-    ├── casino_lobby/
-    └── sports_lobby/
+└── shop/
+    ├── shop_home/
+    └── shop_detail/
 ```
 
 如果一個 feature 太大要拆，拆成 sibling features，不要 nest。
