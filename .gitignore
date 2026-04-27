@@ -13,6 +13,9 @@
 .claude/
 .cursor/
 
+# Internal design docs (not part of public repo content)
+docs/superpowers/
+
 # Misc
 *.bak
 *.tmp
