@@ -45,10 +45,10 @@
 |---|---|
 | 加新 ADR | (a) `adr/index.md` 索引表<br>(b) 對應規範檔頂部「規則表 → ADR」加連結<br>(c) 對應規範檔內加 inline `→ 詳見 [ADR-XXX]`（如適用）<br>(d) 其他相關 ADR 的 `Related` section 補新 ADR 引用 |
 | Supersede 既有 ADR | (a) 新 ADR 的 Status 標 `Supersedes: ADR-XXX`<br>(b) 舊 ADR 的 Status 改為 `Superseded by ADR-XXX`（**不刪檔、不改其他內容**）<br>(c) `conventions.md` cheatsheet 引用切到新 ADR<br>(d) 規範檔內 inline `→ [舊 ADR]` 切到新 ADR |
-| 改 `packages.md` 套件選擇 | (a) 補 / 改對應 ADR<br>(b) root `README.md` §2 立場表（如改的是頂層套件）<br>(c) 受影響的規範檔（`grep -rn` 該套件名找全引用） |
+| 改 `packages.md` 套件選擇 | (a) 補 / 改對應 ADR<br>(b) root `README.md` 「立場（必讀）」段（如改的是頂層套件）<br>(c) 受影響的規範檔（`grep -rn` 該套件名找全引用） |
 | 加 / 拆 / 刪 / 改名 規範檔（`architecture/` / `patterns/` / `infrastructure/` / `style/`） | (a) `conventions.md` 「你要做的事 → 必讀」表的檔名<br>(b) 其他規範檔內的相對連結（`grep -rn './<old>'`）<br>(c) ADR 的 `Related` section 引用 |
 | 改 `conventions.md` 「不可妥協」cheatsheet | (a) 對應 ADR 仍 Accepted<br>(b) 對應規範檔仍有該規則 |
-| 改 root `README.md` §2 立場表 | (a) `packages.md` 一致<br>(b) `conventions.md` 立場聲明段一致 |
+| 改 root `README.md` 「立場（必讀）」段 | (a) `packages.md` 一致<br>(b) `conventions.md` 立場聲明段一致 |
 | 改 `conventions.md` 檔名 / 路徑 | 🚨 **絕對禁止**。此檔是下游 submodule `@` 引用的固定目標，改名 = break 所有下游 repo。沒有「協調後可改」這個選項。 |
 
 ---
@@ -58,7 +58,12 @@
 ### 文件本體
 
 - **語言**：繁中為主；技術名詞、套件名、code 用英文
-- **Callouts**：用 `> ⚠️` / `> 📌` / `> 💡` blockquote。不用粗體開頭加 emoji
+- **Callouts**：用 blockquote 開頭加語義 emoji。不在純段落用「粗體開頭加 emoji」假裝 callout
+  - `> ⚠️` —— 警告 / 注意（一般風險或需留意處）
+  - `> 📌` —— 補充說明（pin 住的注釋）
+  - `> 💡` —— 提示 / 建議
+  - `> **🔒 ...**` —— 不可變更 / append-only 原則
+  - `> **🚨 ...**` 或表格內 `🚨 ...` —— 絕對禁止 / hard prohibition
 - **正反例**：每條規則須有 `✅` / `❌` 範例對照
 - **目錄樹**：用 ` ```text ` fence，不用裸 ` ``` `
 
