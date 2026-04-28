@@ -40,10 +40,9 @@
 
 ```
 architecture/        架構規範：分層、依賴、檔案結構、DI
-patterns/            設計模式：BLoC、錯誤處理、導航、codegen
+patterns/            設計模式：BLoC、錯誤處理、導航、codegen、testing
 infrastructure/      基礎設施：HTTP、session、config、platform
 style/               程式碼風格：命名、排版
-testing.md           測試策略
 packages.md          套件白名單
 adr/                 架構決策紀錄（為什麼這樣選）
 templates/           給下游 repo 的入口檔模板

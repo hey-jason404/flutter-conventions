@@ -287,6 +287,6 @@ lib/features/auth/presentation/login_page/login_page.dart
 
 ## Related
 
-- [`patterns/state-management.md`](./patterns/state-management.md) — BLoC / Event / State / SideEffect 結構
-- [`patterns/error-handling.md`](./patterns/error-handling.md) — Either / AppFailure / Failure 映射
-- [`packages.md`](./packages.md) — 測試套件白名單
+- [`state-management.md`](./state-management.md) — BLoC / Event / State / SideEffect 結構
+- [`error-handling.md`](./error-handling.md) — Either / AppFailure / Failure 映射
+- [`packages.md`](../packages.md) — 測試套件白名單

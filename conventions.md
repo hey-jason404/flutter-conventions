@@ -20,7 +20,7 @@
 | Platform 差異 | `infrastructure/platform.md` |
 | 命名 | `style/naming.md` |
 | 排版、import、async | `style/coding-style.md` |
-| 寫測試 | `testing.md` |
+| 寫測試 | `patterns/testing.md` |
 | 加套件 | `packages.md` |
 
 ## 不可妥協（永遠適用，不用查檔）
