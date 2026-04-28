@@ -1,6 +1,8 @@
 # Flutter Conventions
 
-> 一份為 AI 開發代理（Claude Code、Codex、Cursor）設計的 Flutter / Dart 開發規範。也適用於人類工程師閱讀。
+> 一份為 AI 開發代理（Claude Code、Codex、Cursor）設計的 Flutter / Dart **Mobile App** 開發規範（iOS / Android）。也適用於人類工程師閱讀。
+>
+> ⚠️ 不適用於 Flutter Web / Desktop。
 
 [![License](https://img.shields.io/github/license/hey-jason404/flutter-conventions)](LICENSE)
 
@@ -8,7 +10,7 @@
 
 ## 這是什麼
 
-這個 repo 收錄一套**完整、有立場（opinionated）**的 Flutter / Dart 工程規範。
+這個 repo 收錄一套**完整、有立場（opinionated）**的 Flutter / Dart 工程規範，**範圍限定 iOS / Android Mobile App**。
 
 設計目標：
 
@@ -36,58 +38,155 @@
 
 ---
 
-## 規範地圖
+## 規範本體
 
-```
-architecture/        架構規範：分層、依賴、檔案結構、DI
-patterns/            設計模式：BLoC、錯誤處理、導航、codegen、testing
-infrastructure/      基礎設施：HTTP、session、config、platform
-style/               程式碼風格：命名、排版
-packages.md          套件白名單
-adr/                 架構決策紀錄（為什麼這樣選）
-templates/           給下游 repo 的入口檔模板
-conventions.md       主索引（被下游 @-import）
-```
+規範內容請見 [`conventions.md`](./conventions.md) —— AI agent 與人類工程師都從這裡開始讀。下游 repo 怎麼讓 AI 自動載入規範見 §5。
 
 ---
 
-## 如何使用
+## 4. 如何使用
 
-### 給工程師：直接讀
+把本 repo 用 git submodule 接到你的 Flutter repo，依下列步驟操作。
 
-從 [`conventions.md`](./conventions.md) 開始，那是主索引。
+### 4.1 第一次使用
 
-### 給團隊：透過 git submodule 共用
+**加 submodule（接入者一次性執行）**
+
+在你的 Flutter repo 根目錄執行：
 
 ```bash
-# 在你的 Flutter repo 裡（用 HTTPS，不需 GitHub auth）
-git submodule add https://github.com/hey-jason404/flutter-conventions.git src/docs/conventions
-
-# 複製入口模板（依使用工具選一或全選）
-cp src/docs/conventions/templates/CLAUDE.md.template ./CLAUDE.md
-cp src/docs/conventions/templates/AGENTS.md.template ./AGENTS.md
-
-# 編輯 ./CLAUDE.md / ./AGENTS.md，填上專案名與 Project Context
+git submodule add https://github.com/hey-jason404/flutter-conventions.git shared/flutter-conventions
 ```
 
-> 💡 用 HTTPS 即可，**不需要任何 GitHub 帳號 / SSH key**（本 repo 為 public）。SSH 反而會逼每個團隊成員都先設好 GitHub key，徒增摩擦。
+> ⚠️ **一定用 HTTPS，不要用 SSH**。
+> flutter-conventions 是 public repo，HTTPS 不需要任何 GitHub auth；SSH 反而要求每位團隊成員都先設好 GitHub SSH key，徒增摩擦。
 
-詳細整合說明（含 onboard / CI / 常見坑）見 [`templates/README.md`](./templates/README.md)。
+`shared/flutter-conventions/` 是建議的預設 path。依你 repo 結構可選別的：
 
-### 給 AI agents：透過模板自動載入
+| 你的 repo 結構 | 建議 path |
+|---|---|
+| 標準 Flutter（root 直接 `lib/`、無 wrapper） | `shared/flutter-conventions/`（預設） |
+| 有 `src/` 包住 Flutter source（如 monorepo） | `src/docs/conventions/` |
+| 有 root 級 `docs/` 已存在 | `docs/conventions/` |
 
-下游 repo 設好後，Claude Code / Codex / Cursor 編輯 `.dart` 檔時會自動套用本規範。
+選定後請記得在後續模板（§5）中改成你實際的 path。
+
+**Clone 含 submodule 的 repo（團隊成員）**
+
+首次 clone：
+
+```bash
+git clone --recurse-submodules <your-repo-url>
+```
+
+已 clone 過 / 切到含 submodule 的 branch：
+
+```bash
+git submodule update --init --recursive
+```
+
+**全域設定（建議每人設一次）**
+
+```bash
+git config --global submodule.recurse true
+```
+
+之後 `git pull` / `git checkout` / `git switch` 會自動同步 submodule。整個團隊每人設一次，永遠不再踩「忘了 init」這個坑。
+
+### 4.2 如何更新
+
+flutter-conventions 改了之後，下游 repo 二選一：
+
+**A. Pin 版本（推薦）**
+
+每次手動 bump，commit 走 review：
+
+```bash
+cd shared/flutter-conventions
+git pull origin master
+cd ../..
+git add shared/flutter-conventions
+git commit -m "chore: bump flutter-conventions"
+```
+
+✅ 規範變更走 PR review、版本可追蹤、不會被上游 breaking change 突襲。
+
+**B. 跟最新**
+
+```bash
+git submodule update --remote --merge
+```
+
+✅ 永遠最新；❌ 上游壞了你跟著壞。
+
+> **預設用 A**（pin 版本）。團隊成熟後可考慮 B。
+
+### 4.3 如何刪除
+
+不再使用本規範時，依下列步驟完整移除 submodule：
+
+```bash
+# 1. 取消 submodule 註冊
+git submodule deinit -f shared/flutter-conventions
+
+# 2. 從 working tree 與 .gitmodules 移除
+git rm -f shared/flutter-conventions
+
+# 3. 清理 .git/modules 殘留
+rm -rf .git/modules/shared/flutter-conventions
+
+# 4. Commit
+git commit -m "chore: remove flutter-conventions"
+```
+
+> 📌 若你依 §5 設了 `CLAUDE.md` / `AGENTS.md`，需一併刪除這兩個檔案，或編輯掉裡面引用 `shared/flutter-conventions/` 的段落。
 
 ---
 
-## 規範變更流程
+## 5. 進階：讓 AI 主動套用規範（建議）
 
-1. 開 issue 描述要改什麼、為什麼
-2. PR 修改規範內容 + 對應 ADR（如為重要決策）
-3. Review → merge
-4. 各下游 repo 同步新版（兩種策略二選一，**預設推薦 A**）：
-   - **A. Pin 版本**（穩定、走 PR review）：`cd <submodule> && git pull origin master && cd .. && git add <submodule> && git commit -m "chore: bump flutter-conventions"`
-   - **B. 跟最新**（活，自動拉最新）：`git submodule update --remote --merge`
+§4 完成後，規範本體已經接到你的 repo。但要讓 Claude Code / Codex / Cursor **每次寫 code 都自動讀規範**，建議再多一步：複製本 repo 的入口模板到你的 Flutter repo root。
+
+> 💡 此步驟非必要。不做也能讓工程師手動參閱規範；做了之後 AI 編輯 `.dart` 檔時會自動套用。
+
+### 適用工具對照
+
+| 你的 AI 工具 | 要建的入口檔 |
+|---|---|
+| Claude Code | `CLAUDE.md` |
+| Codex CLI、Cursor | `AGENTS.md` |
+| 多種工具混用 | 兩個都建 |
+
+### 步驟
+
+```bash
+# 從 submodule 複製模板到 repo root（兩個都複製或選一個）
+cp shared/flutter-conventions/templates/CLAUDE.md.template ./CLAUDE.md
+cp shared/flutter-conventions/templates/AGENTS.md.template ./AGENTS.md
+```
+
+模板來源連結：
+- [`templates/CLAUDE.md.template`](./templates/CLAUDE.md.template)
+- [`templates/AGENTS.md.template`](./templates/AGENTS.md.template)
+
+打開複製出來的 `CLAUDE.md` / `AGENTS.md`，做三件事：
+
+1. 把 `{{Project Name}}` 換成你的專案名
+2. **若 mount 在非預設 path**（例如 `src/docs/conventions/`），把模板內所有 `shared/flutter-conventions/` 改成你實際的 path
+3. 填寫 `Project Context` 段（這個 repo 的背景資訊，不是規範）
+
+最後 commit：
+
+```bash
+git add CLAUDE.md AGENTS.md
+git commit -m "chore: add AI agent entry files"
+```
+
+---
+
+## 問題回報
+
+有任何使用上的疑問、bug、或想討論規範內容，請到 [GitHub Issues](https://github.com/hey-jason404/flutter-conventions/issues) 提報。
 
 ---
 
