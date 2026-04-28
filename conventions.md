@@ -6,6 +6,8 @@
 
 | 你要做的事 | 必讀 |
 |---|---|
+| 理解專案架構 / 分層 / 依賴方向 | `architecture/overview.md` |
+| 新增 / 整理 feature 資料夾 | `architecture/folder-structure.md` |
 | 寫/改 Page、Widget | `architecture/presentation-layer.md` |
 | 寫/改 BLoC、Event、State、SideEffect | `patterns/state-management.md` |
 | 寫/改 UseCase、Entity、Value Object | `architecture/domain-layer.md` |
