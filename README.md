@@ -48,7 +48,9 @@
 
 把本 repo 用 git submodule 接到你的 Flutter repo，依下列步驟操作。
 
-### 4.1 加 submodule
+### 4.1 第一次使用
+
+**加 submodule（接入者一次性執行）**
 
 在你的 Flutter repo 根目錄執行：
 
@@ -58,8 +60,6 @@ git submodule add https://github.com/hey-jason404/flutter-conventions.git shared
 
 > ⚠️ **一定用 HTTPS，不要用 SSH**。
 > flutter-conventions 是 public repo，HTTPS 不需要任何 GitHub auth；SSH 反而要求每位團隊成員都先設好 GitHub SSH key，徒增摩擦。
-
-#### Path 選擇
 
 `shared/flutter-conventions/` 是建議的預設 path。依你 repo 結構可選別的：
 
@@ -71,23 +71,21 @@ git submodule add https://github.com/hey-jason404/flutter-conventions.git shared
 
 選定後請記得在後續模板（§5）中改成你實際的 path。
 
-### 4.2 團隊 onboard
+**Clone 含 submodule 的 repo（團隊成員）**
 
-#### 首次 clone repo
+首次 clone：
 
 ```bash
 git clone --recurse-submodules <your-repo-url>
 ```
 
-`--recurse-submodules` 會一併拉 conventions 內容。
-
-#### 已 clone 過 / 切到含 submodule 的 branch
+已 clone 過 / 切到含 submodule 的 branch：
 
 ```bash
 git submodule update --init --recursive
 ```
 
-#### 一勞永逸（建議全域設一次）
+**全域設定（建議每人設一次）**
 
 ```bash
 git config --global submodule.recurse true
@@ -95,11 +93,11 @@ git config --global submodule.recurse true
 
 之後 `git pull` / `git checkout` / `git switch` 會自動同步 submodule。整個團隊每人設一次，永遠不再踩「忘了 init」這個坑。
 
-### 4.3 更新同步
+### 4.2 如何更新
 
 flutter-conventions 改了之後，下游 repo 二選一：
 
-#### A. Pin 版本（推薦）
+**A. Pin 版本（推薦）**
 
 每次手動 bump，commit 走 review：
 
@@ -113,7 +111,7 @@ git commit -m "chore: bump flutter-conventions"
 
 ✅ 規範變更走 PR review、版本可追蹤、不會被上游 breaking change 突襲。
 
-#### B. 跟最新
+**B. 跟最新**
 
 ```bash
 git submodule update --remote --merge
@@ -123,7 +121,7 @@ git submodule update --remote --merge
 
 > **預設用 A**（pin 版本）。團隊成熟後可考慮 B。
 
-### 4.4 移除
+### 4.3 如何刪除
 
 不再使用本規範時，依下列步驟完整移除 submodule：
 
