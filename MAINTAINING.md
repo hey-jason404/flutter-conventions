@@ -49,6 +49,7 @@
 | 加 / 拆 / 刪 / 改名 規範檔（`architecture/` / `patterns/` / `infrastructure/` / `style/`） | (a) `conventions.md` 「你要做的事 → 必讀」表的檔名<br>(b) 其他規範檔內的相對連結（`grep -rn './<old>'`）<br>(c) ADR 的 `Related` section 引用 |
 | 改 `conventions.md` 「不可妥協」cheatsheet | (a) 對應 ADR 仍 Accepted<br>(b) 對應規範檔仍有該規則 |
 | 改 root `README.md` 「立場（必讀）」段 | (a) `packages.md` 一致<br>(b) `conventions.md` 立場聲明段一致 |
+| 改 AI 入口設計（mount path 慣例 / `conventions.md` 載入方式 / 模板與 AI 工具互動模式） | (a) `templates/CLAUDE.md.template`（含 `@` 引用語法、預設 path）<br>(b) `templates/AGENTS.md.template`（含必讀提示、預設 path）<br>(c) root `README.md` §4「如何使用」/ §5「進階」步驟是否仍正確 |
 | 改 `conventions.md` 檔名 / 路徑 | 🚨 **絕對禁止**。此檔是下游 submodule `@` 引用的固定目標，改名 = break 所有下游 repo。沒有「協調後可改」這個選項。 |
 
 ---
