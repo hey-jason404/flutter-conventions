@@ -61,17 +61,19 @@ conventions.md       主索引（被下游 @-import）
 ### 給團隊：透過 git submodule 共用
 
 ```bash
-# 在你的 Flutter repo 裡
-git submodule add https://github.com/hey-jason404/flutter-conventions shared/flutter-conventions
+# 在你的 Flutter repo 裡（用 HTTPS，不需 GitHub auth）
+git submodule add https://github.com/hey-jason404/flutter-conventions.git src/docs/conventions
 
 # 複製入口模板（依使用工具選一或全選）
-cp shared/flutter-conventions/templates/CLAUDE.md.template ./CLAUDE.md
-cp shared/flutter-conventions/templates/AGENTS.md.template ./AGENTS.md
+cp src/docs/conventions/templates/CLAUDE.md.template ./CLAUDE.md
+cp src/docs/conventions/templates/AGENTS.md.template ./AGENTS.md
 
 # 編輯 ./CLAUDE.md / ./AGENTS.md，填上專案名與 Project Context
 ```
 
-詳細整合說明見 [`templates/README.md`](./templates/README.md)。
+> 💡 用 HTTPS 即可，**不需要任何 GitHub 帳號 / SSH key**（本 repo 為 public）。SSH 反而會逼每個團隊成員都先設好 GitHub key，徒增摩擦。
+
+詳細整合說明（含 onboard / CI / 常見坑）見 [`templates/README.md`](./templates/README.md)。
 
 ### 給 AI agents：透過模板自動載入
 
@@ -84,7 +86,9 @@ cp shared/flutter-conventions/templates/AGENTS.md.template ./AGENTS.md
 1. 開 issue 描述要改什麼、為什麼
 2. PR 修改規範內容 + 對應 ADR（如為重要決策）
 3. Review → merge
-4. 各下游 repo 透過 `git submodule update --remote` 拉新版
+4. 各下游 repo 同步新版（兩種策略二選一，**預設推薦 A**）：
+   - **A. Pin 版本**（穩定、走 PR review）：`cd <submodule> && git pull origin master && cd .. && git add <submodule> && git commit -m "chore: bump flutter-conventions"`
+   - **B. 跟最新**（活，自動拉最新）：`git submodule update --remote --merge`
 
 ---
 
