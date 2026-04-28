@@ -8,6 +8,15 @@
 
 > ⚠️ 上方路徑 `shared/flutter-conventions/` 是預設建議。如果你 mount submodule 在不同位置（例如 `src/docs/conventions/`），請對應修改此處的 path。
 
+## 進階工作流（optional）
+
+若你有以下工具，建議搭配使用：
+
+- **[OpenSpec](https://github.com/Fission-AI/OpenSpec)** —— feature 提案結構化框架（多工具支援）。動工前 `/opsx:propose <feature>` 產出 `openspec/changes/<feature>/`（含 proposal、specs、design、tasks）；實作時 AI 同時遵守 OpenSpec proposal 和本規範；收尾用 `/opsx:archive`
+- **[Superpowers](https://github.com/obra/superpowers)** —— Claude Code 專屬 skills library（其他工具無對應）。對話收斂用 `brainstorming`、產出 plan 用 `writing-plans`、commit 前自我驗證用 `requesting-code-review`
+
+沒裝這些工具也能用本規範，這只是建議的進階流程。
+
 ## Project Context
 
 <!--
