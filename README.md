@@ -40,7 +40,7 @@
 
 ## 規範本體
 
-規範內容請見 [`conventions.md`](./conventions.md) —— AI agent 的執行入口，下游 repo 透過 `@-import` 自動載入；人類工程師也從這裡開始讀。
+規範內容請見 [`conventions.md`](./conventions.md) —— AI agent 與人類工程師都從這裡開始讀。下游 repo 怎麼讓 AI 自動載入規範見 §5。
 
 ---
 
