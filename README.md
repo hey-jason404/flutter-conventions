@@ -40,7 +40,7 @@
 
 ## 規範地圖
 
-```
+```text
 architecture/        架構規範：分層、依賴、檔案結構、DI
 patterns/            設計模式：BLoC、錯誤處理、導航、codegen、testing
 infrastructure/      基礎設施：HTTP、session、config、platform
@@ -53,7 +53,7 @@ conventions.md       主索引（被下游 @-import）
 
 ---
 
-## 如何使用
+## 4. 如何使用
 
 把本 repo 用 git submodule 接到你的 Flutter repo，依下列步驟操作。
 
@@ -154,7 +154,7 @@ git commit -m "chore: remove flutter-conventions"
 
 ---
 
-## 進階：讓 AI 主動套用規範（建議）
+## 5. 進階：讓 AI 主動套用規範（建議）
 
 §4 完成後，規範本體已經接到你的 repo。但要讓 Claude Code / Codex / Cursor **每次寫 code 都自動讀規範**，建議再多一步：複製本 repo 的入口模板到你的 Flutter repo root。
 
