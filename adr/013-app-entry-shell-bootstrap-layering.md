@@ -143,4 +143,4 @@ Future<void> main() async {
 - 規範：[`architecture/folder-structure.md`](../architecture/folder-structure.md)（程式入口與 App 殼章節）
 - 規範：[`infrastructure/bootstrap.md`](../infrastructure/bootstrap.md)（bootstrap 細則：可做 / 禁止 / 順序）
 - 既有 ADR：[ADR-011: Domain Zero Flutter Imports](./011-domain-zero-flutter-imports.md)（layer 邊界，責任分層的姊妹）
-- 既有 ADR：[ADR-012: Features Never Cross-Import](./012-features-no-cross-import.md)（feature 邊界，責任分層的姊妹）
+- 既有 ADR：[ADR-014: Features Cross-Import Rules](./014-features-cross-import-rules.md)（feature 邊界，責任分層的姊妹；supersedes ADR-012）
