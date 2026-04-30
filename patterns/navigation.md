@@ -284,22 +284,22 @@ GoRoute(
 ### ✅ Caller 端
 
 ```dart
-// features/banking/.../withdrawal_bloc.dart
+// features/profile/.../change_email_bloc.dart
 import 'package:.../app/router/app_router.dart';                                                // ✅ from app
 import 'package:.../features/verification/presentation/verification_page/verification_params.dart'; // ✅ page contract
 import 'package:.../features/verification/presentation/verification_page/verification_result.dart'; // ✅ page contract
 import 'package:.../features/verification/domain/enums/verification_scenario.dart';            // ✅ domain enum
 
 @injectable
-class WithdrawalBloc extends Bloc<WithdrawalEvent, WithdrawalState> {
-  WithdrawalBloc({
-    required WithdrawUseCase withdraw,
+class ChangeEmailBloc extends Bloc<ChangeEmailEvent, ChangeEmailState> {
+  ChangeEmailBloc({
+    required UpdateEmailUseCase updateEmail,
     required AppRouter router,
   });
 
-  Future<void> _onConfirmRequested(...) async {
+  Future<void> _onSubmitRequested(...) async {
     final result = await _router.pushVerification(
-      params: VerificationParams(scenario: VerificationScenario.withdrawal),
+      params: VerificationParams(scenario: VerificationScenario.changeEmail),
     );
     if (!result.verified) return;
     // ...
