@@ -318,7 +318,8 @@ Domain 層**唯一允許**的 import：
 - `dart:` 標準庫（`dart:async`、`dart:convert`、...）
 - `package:fpdart/fpdart.dart`（`Either`、`Option`、`Unit`）
 - `package:freezed_annotation/freezed_annotation.dart`（codegen annotation）
-- 同 feature 或其他 feature 的 domain entity / interface
+- 同 feature 的 domain 全部
+- 其他 feature 的 domain entity / enum / VO / UseCase（Repository interface 不可跨 feature import）
 
 **禁止** import：
 
@@ -334,16 +335,18 @@ import 'dart:async';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../entities/user.dart';
-import '../../../auth/domain/repositories/auth_repository.dart';
+import '../../../auth/domain/entities/user/user.dart';                                    // 跨 feature entity ✅
+import '../../../auth/domain/usecases/get_current_user/get_current_user_usecase.dart';    // 跨 feature UseCase ✅
 
 // ❌ 禁止
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:dio/dio.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
+import '../../../auth/domain/repositories/auth_repository.dart';                           // 跨 feature Repository interface ❌
 ```
 
-→ 詳見 [ADR-011](../adr/011-domain-zero-flutter-imports.md)
+→ 詳見 [ADR-011](../adr/011-domain-zero-flutter-imports.md)、[ADR-014](../adr/014-features-cross-import-rules.md)
 
 ---
 
@@ -389,4 +392,4 @@ abstract class User with _$User {
 - [`data-layer.md`](./data-layer.md) — Repository 實作、Mapper、DTO
 - [`patterns/error-handling.md`](../patterns/error-handling.md) — `Either` / `AppFailure` / `FieldFailure`
 - [`patterns/code-generation.md`](../patterns/code-generation.md) — `freezed` 規範
-- [ADR-007](../adr/007-either-pattern-for-domain-results.md)、[ADR-009](../adr/009-usecase-call-method-with-input.md)、[ADR-011](../adr/011-domain-zero-flutter-imports.md)
+- [ADR-007](../adr/007-either-pattern-for-domain-results.md)、[ADR-009](../adr/009-usecase-call-method-with-input.md)、[ADR-011](../adr/011-domain-zero-flutter-imports.md)、[ADR-014](../adr/014-features-cross-import-rules.md)

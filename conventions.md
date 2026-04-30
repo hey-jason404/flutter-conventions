@@ -34,7 +34,7 @@
 - ❌ Hardcoded 字串 —— 用 `context.t.*`（slang）
 - ❌ Hardcoded asset path —— 用 `Assets.*`（flutter_gen）
 - ❌ Domain 層 import Flutter —— 違反分層（→ [ADR-011](./adr/011-domain-zero-flutter-imports.md)）
-- ❌ Features 互相 import —— 透過 domain interface 解耦（→ [ADR-012](./adr/012-features-no-cross-import.md)）
+- ❌ 跨 feature import Data / Repository interface / BLoC（含 state / event / sideEffect）—— 但 Domain entity / enum / VO / UseCase 與 Page / Widget 跨 feature 允許（→ [ADR-014](./adr/014-features-cross-import-rules.md)）
 - ❌ `main.dart` 多於三行 / `app.dart` 收業務參數 / 副作用散落 widget 樹 —— 入口 / 殼 / bootstrap 三層分離（→ [ADR-013](./adr/013-app-entry-shell-bootstrap-layering.md)）
 - ❌ Hand-edit 生成檔（`*.freezed.dart`、`*.g.dart`、`*.config.dart`）
 - ✅ 命名：檔案 `snake_case`、class `PascalCase`、private `_camelCase`

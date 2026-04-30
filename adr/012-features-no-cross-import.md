@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted | Date: 2024-06-05 | Supersedes: -
+Superseded by [ADR-014](./014-features-cross-import-rules.md) | Date: 2024-06-05 | Supersedes: -
 
 ## Context
 

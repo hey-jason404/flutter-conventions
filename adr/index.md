@@ -19,5 +19,6 @@
 | [009](./009-usecase-call-method-with-input.md) | UseCase: `call()` Method with Input Class | Accepted | domain-layer |
 | [010](./010-no-build-prefix-private-method.md) | No `_build` Prefix Private Methods for Widgets | Accepted | presentation-layer |
 | [011](./011-domain-zero-flutter-imports.md) | Domain Layer: Zero Flutter Imports | Accepted | architecture |
-| [012](./012-features-no-cross-import.md) | Features Never Cross-Import | Accepted | architecture |
+| [012](./012-features-no-cross-import.md) | Features Never Cross-Import | Superseded by [014](./014-features-cross-import-rules.md) | architecture |
 | [013](./013-app-entry-shell-bootstrap-layering.md) | App Entry / Shell / Bootstrap Layering | Accepted | architecture |
+| [014](./014-features-cross-import-rules.md) | Features Cross-Import Rules | Accepted | architecture |

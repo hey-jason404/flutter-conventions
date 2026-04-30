@@ -9,7 +9,7 @@
 | # | 規則 | ADR |
 |---|---|---|
 | 1 | Domain 層零 Flutter / 第三方 import | [ADR-011](../adr/011-domain-zero-flutter-imports.md) |
-| 2 | Features 互相 import 一律禁止（透過 domain interface 解耦） | [ADR-012](../adr/012-features-no-cross-import.md) |
+| 2 | 跨 feature 邊界依「契約 vs 實作」分類：Domain entity / enum / VO / UseCase 與 Page / Widget 允許跨 feature；Data / Repository interface / BLoC 禁止 | [ADR-014](../adr/014-features-cross-import-rules.md) |
 | 3 | 依賴方向單向：Presentation → Domain ← Data | — |
 | 4 | `features/` 一層深，禁止 sub-feature nesting | — |
 | 5 | 一個 feature 一個 RepositoryImpl、最多一個 remote / 一個 local DataSource | — |
@@ -29,7 +29,7 @@
 - **Domain** 不依賴任何外層（純 Dart，零 Flutter）
 - **Data** 實作 Domain 的 Repository interface
 - **Core / Shared** 不依賴任何 feature
-- **Features 不互相依賴**
+- **Features 跨依賴受限**：契約類（entity / enum / VO / UseCase / Page / Widget）允許；實作 / 狀態類（Data / Repository interface / BLoC）禁止 —— 詳見 [ADR-014](../adr/014-features-cross-import-rules.md)
 
 違反這些是 blocker，不可繞過。
 
@@ -149,10 +149,11 @@ class AuthRepositoryImpl implements AuthRepository {
 
 | 層 | 可以 import | 不可以 import |
 |---|---|---|
-| Presentation | Domain、Core、ui_kit | Data 任何東西 |
-| Domain | 純 Dart 標準庫、`fpdart`、其他 feature 的 Domain entity / interface | Flutter、Data、第三方框架（除 fpdart） |
-| Data | Domain（實作 interface 用）、Core | 其他 feature 的 Data |
+| Presentation | Domain、Core、ui_kit、其他 feature 的 Domain（entity / enum / VO / UseCase）、其他 feature 的 Page / Widget | Data 任何東西、其他 feature 的 BLoC / state / event、其他 feature 的 Repository interface |
+| Domain | 純 Dart 標準庫、`fpdart`、其他 feature 的 Domain entity / enum / VO / UseCase | Flutter、Data、第三方框架（除 fpdart）、其他 feature 的 Repository interface |
+| Data | 自家 Domain（實作 interface 用）、Core | 其他 feature 的 Data、其他 feature 的 Repository interface |
 | Core / Shared | Dart 標準庫、Flutter、第三方 | 任何 feature |
+| App（composer） | 任何 feature 的 Domain、任何 feature 的 Page、core、ui_kit | 任何 feature 的 Data、任何 feature 的 BLoC 細節 |
 
 ---
 
@@ -174,40 +175,64 @@ features/
 └── product_api/
 ```
 
-### Features 不互相 import
+### Features 跨 import 邊界
 
-需要其他 feature 能力時，透過 Core 的介面解耦：
+**契約 vs 實作** 兩刀切：契約類允許跨 feature，實作 / 狀態類禁止。
+
+| 對象 | 跨 feature import |
+|---|---|
+| Domain entity / enum / VO | ✅ |
+| Domain UseCase | ✅ |
+| Domain Repository interface | ❌ |
+| Data 全部（DTO / Mapper / RepositoryImpl / DataSource） | ❌ |
+| Presentation Page + 對外 routing contract type | ✅ |
+| Presentation Widget | ✅ |
+| Presentation BLoC / state / event / sideEffect | ❌ |
 
 ```dart
-// ✅ feature B 透過 SessionContext (in core/) 取得 currentUser
+// ✅ profile feature 的 BLoC 透過跨 feature UseCase 取登入用戶
+import '../../../auth/domain/usecases/get_current_user/get_current_user_usecase.dart';
+
+@injectable
+class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
+  ProfileBloc({
+    required GetProfileUseCase getProfile,
+    required GetCurrentUserUseCase getCurrentUser,
+  });
+}
+```
+
+```dart
+// ❌ profile feature 直接吃 auth feature 的 Repository interface
+import '../../../auth/domain/repositories/auth_repository.dart';
+
 @injectable
 class GetProfileUseCase {
-  const GetProfileUseCase(this._sessionContext, this._repository);
-  final SessionContext _sessionContext;
-  final ProfileRepository _repository;
+  const GetProfileUseCase({
+    required ProfileRepository profileRepo,
+    required AuthRepository authRepo,    // ❌ 跨 feature Repository interface
+  });
+}
+```
 
-  Future<Either<AppFailure, Profile>> call() async {
-    final userId = _sessionContext.currentUserId;
-    if (userId == null) return const Left(UnauthorizedAppFailure());
-    return _repository.getProfile(userId: userId);
+**為什麼錯**：跨 feature 取資料應該走對方的 UseCase（單一動詞、明確 input / output），不可繞過 UseCase 紀律直接吃 Repository。
+
+```dart
+// ❌ cart feature 直接 import auth feature 的 BLoC
+import '../../../auth/presentation/login_page/bloc/login_bloc.dart';
+
+class CartPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final user = context.watch<LoginBloc>().state;    // ❌ 跨 feature BLoC
+    // ...
   }
 }
 ```
 
-```dart
-// ❌ profile feature 直接 import auth feature
-import '../../../auth/domain/usecases/get_current_user_usecase.dart';
+**為什麼錯**：BLoC 有 lifetime + `BlocProvider` scope，跨 feature 取對方 BLoC 帶 runtime crash 風險。需要對方資料就走對方 UseCase。
 
-class GetProfileUseCase {
-  const GetProfileUseCase(this._getCurrentUser, this._repository);
-  final GetCurrentUserUseCase _getCurrentUser;     // 違規
-  final ProfileRepository _repository;
-}
-```
-
-**為什麼錯**：feature B 改動可能波及 A；feature 越多耦合圖越亂；無法獨立替換或移除。
-
-→ 詳見 [ADR-012](../adr/012-features-no-cross-import.md)
+→ 詳見 [ADR-014](../adr/014-features-cross-import-rules.md)
 
 ### `features/` 一層深
 
@@ -261,12 +286,14 @@ abstract interface class AuthRepository { ... }
 **為什麼錯**：Domain 必須是 pure Dart；引入 Dio 違反 Domain 框架無關原則。
 
 ```dart
-// ❌ Feature A 的 BLoC import Feature B 的 UseCase ?
-import '../../../auth/domain/usecases/login_usecase.dart';
+// ❌ Feature A 的 BLoC import Feature B 的 BLoC
+import '../../../auth/presentation/login_page/bloc/login_bloc.dart';
 
-class CartBloc { ... }
+class CartBloc extends Bloc<CartEvent, CartState> {
+  CartBloc({required LoginBloc loginBloc});    // ❌ 跨 feature BLoC
+}
 ```
-**為什麼錯**：cart feature 不該直接知道 auth feature 的 UseCase；如果真的需要登入狀態，走 `SessionContext`（在 core/ 的 abstraction）。
+**為什麼錯**：跨 feature import BLoC 會綁 lifetime / `BlocProvider` scope，帶 runtime crash 風險。需要對方資料走對方的 **UseCase**（跨 feature UseCase ✅）；需要 session 狀態仍走 `SessionContext`（在 `core/`）。
 
 ---
 
@@ -277,4 +304,4 @@ class CartBloc { ... }
 - [`domain-layer.md`](./domain-layer.md) — Domain 層詳細規範
 - [`presentation-layer.md`](./presentation-layer.md) — Presentation 層詳細規範
 - [`dependency-injection.md`](./dependency-injection.md) — DI 規範
-- [ADR-011](../adr/011-domain-zero-flutter-imports.md)、[ADR-012](../adr/012-features-no-cross-import.md)
+- [ADR-011](../adr/011-domain-zero-flutter-imports.md)、[ADR-014](../adr/014-features-cross-import-rules.md)（supersedes ADR-012）

@@ -50,6 +50,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> { ... }
 
 → 詳見 [`folder-structure.md`](./folder-structure.md)
 
+### Page 對外 routing contract type
+
+當 page 是被多個 flow / feature 觸發的服務型 page（驗證 / 選取 / 確認類），page 的入口 params 與出口 result type 是 page 的對外契約，**與 page 同居於 page 目錄**：
+
+```text
+features/{feature}/presentation/{page_name}/
+├── {page_name}_page.dart
+├── {page_name}_params.dart        # 入口 params（caller 帶進來）
+├── {page_name}_result.dart        # 出口 result（page 回給 caller）
+├── bloc/
+└── widgets/
+```
+
+判斷準則：「**換 router 框架，這個 type 還在嗎？**」
+
+| Type | 用途 | 住哪 |
+|---|---|---|
+| `{Page}Params` | 只為了把資料送進 page 存在 | page 同目錄 |
+| `{Page}Result` | 只為了把結果送回 caller 存在 | page 同目錄 |
+| 業務分流 enum（譬如 `VerificationScenario`，UseCase 內 send / verify 邏輯分流用） | 驅動業務邏輯 | `domain/enums/` |
+| 業務 entity（譬如 `VerificationToken`，驗證成功的業務資料） | 驅動業務邏輯 | `domain/entities/` |
+
+具體例：service feature `VerificationPage`：
+
+```text
+features/verification/presentation/verification_page/
+├── verification_page.dart
+├── verification_params.dart       # ✅ 對外 routing contract
+├── verification_result.dart       # ✅ 對外 routing contract
+├── bloc/                          # ❌ 不對外
+└── widgets/
+```
+
+Page + 其 routing contract types 跨 feature **可被 import**（規範視為 page 的公開介面）；BLoC / state / event / sideEffect **不可跨 feature import**。
+
+→ 詳見 [ADR-014](../adr/014-features-cross-import-rules.md)
+
 ---
 
 ## Page 內部結構
@@ -444,4 +481,4 @@ sealed class LoginState with _$LoginState {
 - [`folder-structure.md`](./folder-structure.md) — Page / BLoC / Widget 目錄結構
 - [`patterns/state-management.md`](../patterns/state-management.md) — BLoC / Event / State / SideEffect
 - [`patterns/navigation.md`](../patterns/navigation.md) — 業務 outcome navigation 走 SideEffect
-- [ADR-010](../adr/010-no-build-prefix-private-method.md)、[ADR-005](../adr/005-imperative-actions-as-side-effect.md)
+- [ADR-010](../adr/010-no-build-prefix-private-method.md)、[ADR-005](../adr/005-imperative-actions-as-side-effect.md)、[ADR-014](../adr/014-features-cross-import-rules.md)
