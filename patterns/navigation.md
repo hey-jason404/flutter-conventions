@@ -270,6 +270,58 @@ GoRoute(
 
 ---
 
+## Service feature handoff
+
+跨 feature 跳到「服務型 page」（驗證 / 選取 / 確認類）並等回傳結果，走 `app/` 內的 router facade，**不直接 import 對方 page widget**。
+
+### 規則
+
+- caller import 對方的 **domain entity / enum** + 對方的 **page-level routing contract type**（params / result，與 page 同居）
+- caller **不** import 對方的 page widget、BLoC、state、event
+- navigation 透過 `app/` 內 type-safe facade 觸達；facade 內封裝 `go_router` 細節
+- 路徑常數仍集中於 `Routes`
+
+### ✅ Caller 端
+
+```dart
+// features/banking/.../withdrawal_bloc.dart
+import 'package:.../app/router/app_router.dart';                                                // ✅ from app
+import 'package:.../features/verification/presentation/verification_page/verification_params.dart'; // ✅ page contract
+import 'package:.../features/verification/presentation/verification_page/verification_result.dart'; // ✅ page contract
+import 'package:.../features/verification/domain/enums/verification_scenario.dart';            // ✅ domain enum
+
+@injectable
+class WithdrawalBloc extends Bloc<WithdrawalEvent, WithdrawalState> {
+  WithdrawalBloc({
+    required WithdrawUseCase withdraw,
+    required AppRouter router,
+  });
+
+  Future<void> _onConfirmRequested(...) async {
+    final result = await _router.pushVerification(
+      params: VerificationParams(scenario: VerificationScenario.withdrawal),
+    );
+    if (!result.verified) return;
+    // ...
+  }
+}
+```
+
+### ❌ 反 pattern
+
+```dart
+// ❌ caller 直接 import 對方 page widget 並 push
+import 'package:.../features/verification/presentation/verification_page/verification_page.dart';
+
+final result = await Navigator.of(context).push(
+  MaterialPageRoute(builder: (_) => VerificationPage(params: ...)),
+);
+```
+
+**為什麼錯**：繞過 `go_router`，deep link / route metadata 失效；caller feature 跟對方 page 的內部建構式綁死。
+
+→ 詳見 [ADR-014](../adr/014-features-cross-import-rules.md)
+
 ## SideEffect 命名
 
 依「動作類型 + 對象」命名，描述明確：
@@ -329,4 +381,4 @@ emitSideEffect(const LoginNavigateToHome());
 - [`state-management.md`](./state-management.md) — SideEffect 結構與 emit 機制
 - [`architecture/presentation-layer.md`](../architecture/presentation-layer.md) — Page 訂閱 SideEffect 流程
 - [`packages.md`](../packages.md) — `go_router` 在白名單
-- [ADR-005](../adr/005-imperative-actions-as-side-effect.md)、[ADR-006](../adr/006-side-effect-plain-sealed-class.md)
+- [ADR-005](../adr/005-imperative-actions-as-side-effect.md)、[ADR-006](../adr/006-side-effect-plain-sealed-class.md)、[ADR-014](../adr/014-features-cross-import-rules.md)
