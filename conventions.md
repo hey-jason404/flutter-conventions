@@ -8,7 +8,8 @@
 |---|---|
 | 理解專案架構 / 分層 / 依賴方向 | `architecture/overview.md` |
 | 新增 / 整理 feature 資料夾 | `architecture/folder-structure.md` |
-| 寫/改 `main.dart` / `app/app.dart` / `app/bootstrap/` | `architecture/folder-structure.md`（程式入口與 App 殼） |
+| 寫/改 `main.dart` / `app/app.dart` | `architecture/folder-structure.md`（程式入口與 App 殼） |
+| 寫/改 `app/bootstrap/`、設定啟動副作用 | `infrastructure/bootstrap.md` |
 | 寫/改 Page、Widget | `architecture/presentation-layer.md` |
 | 寫/改 BLoC、Event、State、SideEffect | `patterns/state-management.md` |
 | 寫/改 UseCase、Entity、Value Object | `architecture/domain-layer.md` |
