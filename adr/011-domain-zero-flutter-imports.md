@@ -122,4 +122,6 @@ import '../../data/datasources/remote/auth_remote_datasource.dart';
 ## Related
 
 - 規範：[`architecture/overview.md`](../architecture/overview.md)、[`architecture/domain-layer.md`](../architecture/domain-layer.md)
-- 相關 ADR：[ADR-012: Features Never Cross-Import](./012-features-no-cross-import.md)（feature 邊界，跟 layer 邊界類似的紀律）
+- 相關 ADR：
+  - [ADR-012: Features Never Cross-Import](./012-features-no-cross-import.md)（feature 邊界，跟 layer 邊界類似的紀律）
+  - [ADR-013: App Entry / Shell / Bootstrap Layering](./013-app-entry-shell-bootstrap-layering.md)（app 啟動三層，責任分層的姊妹）

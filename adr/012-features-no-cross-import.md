@@ -162,4 +162,6 @@ abstract class Profile with _$Profile {
 ## Related
 
 - 規範：[`architecture/overview.md`](../architecture/overview.md)、[`architecture/folder-structure.md`](../architecture/folder-structure.md)
-- 相關 ADR：[ADR-011: Domain Zero Flutter Imports](./011-domain-zero-flutter-imports.md)（layer 邊界，feature 邊界的姊妹）
+- 相關 ADR：
+  - [ADR-011: Domain Zero Flutter Imports](./011-domain-zero-flutter-imports.md)（layer 邊界，feature 邊界的姊妹）
+  - [ADR-013: App Entry / Shell / Bootstrap Layering](./013-app-entry-shell-bootstrap-layering.md)（app 啟動三層，責任分層的姊妹）
