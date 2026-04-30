@@ -1,6 +1,6 @@
 # 目錄結構
 
-> **TL;DR**：feature-first 結構。`lib/{app, core, ui_kit, generated, features, main.dart}`，`features/` 下每個 feature 有 `data/ domain/ presentation/` 三層。Feature 一層深，禁止 nesting。
+> **TL;DR**：feature-first 結構。`lib/{app, core, ui_kit, generated, features, main.dart}`，`features/` 下每個 feature 有 `data/ domain/ presentation/` 三層。Feature 一層深，禁止 nesting。`main.dart` 是入口、`app/app.dart` 是殼、`app/bootstrap/` 集中副作用（→ [ADR-013](../adr/013-app-entry-shell-bootstrap-layering.md)）。
 
 ---
 
@@ -13,6 +13,9 @@
 | 3 | 每個 page 一個 sub-folder，page-level BLoC 命名以 page 為主 | — |
 | 4 | `presentation/` 下不放共用 `bloc/` / `pages/` / `widgets/` 目錄 | — |
 | 5 | `generated/` 下檔案絕不手改 | — |
+| 6 | `main.dart` 嚴格三行：binding → bootstrap → `runApp` | [ADR-013](../adr/013-app-entry-shell-bootstrap-layering.md) |
+| 7 | `app.dart` 是 `const App({super.key})` 純殼，不收業務參數 | [ADR-013](../adr/013-app-entry-shell-bootstrap-layering.md) |
+| 8 | 副作用集中在 `app/bootstrap/`，不散落 `main.dart` 或 widget 樹 | [ADR-013](../adr/013-app-entry-shell-bootstrap-layering.md) |
 
 ---
 
@@ -21,6 +24,10 @@
 ```text
 lib/
 ├── app/
+│   ├── app.dart                            # const App() — App 殼（不收業務參數）
+│   ├── bootstrap/                          # 啟動副作用集中地（→ ADR-013）
+│   │   ├── app_bootstrap.dart              # 對外唯一入口：bootstrap()
+│   │   └── {sdk}_bootstrap.dart            # 各 SDK / 副作用一檔
 │   └── di/
 │       ├── injection_container.dart        # GetIt instance + @InjectableInit
 │       └── injection_container.config.dart # generated, do not edit
@@ -109,6 +116,98 @@ lib/
 │
 └── main.dart
 ```
+
+---
+
+## 程式入口與 App 殼
+
+> 詳細決策見 [ADR-013: App Entry / Shell / Bootstrap Layering](../adr/013-app-entry-shell-bootstrap-layering.md)。
+
+App 啟動拆成三層，責任彼此不重疊：
+
+| 層 | 責任 | 產出 |
+|---|---|---|
+| **入口（Entry）** | 拉起 Flutter runtime → 交棒 bootstrap → `runApp` | `lib/main.dart` |
+| **啟動（Bootstrap）** | 所有「widget 樹掛起來之前」必須做完的副作用 | `lib/app/bootstrap/` |
+| **殼（Shell）** | App widget 樹根：Scopes、全域 `BlocProvider`、`MaterialApp`、Theme、Router 接線 | `lib/app/app.dart` |
+
+### `main.dart` 三行守則
+
+```dart
+// ✅ main.dart 允許的全部內容
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await bootstrap();
+  runApp(const App());
+}
+```
+
+```dart
+// ❌ 不准在 main.dart 出現
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  FirebaseMessaging.onBackgroundMessage(handler);   // 屬 bootstrap
+  await configureDependencies();
+  Bloc.observer = getIt<MyObserver>();              // 屬 bootstrap
+  final router = getIt<GoRouter>();                 // 不准 getIt
+  runApp(App(router: router));                      // App 不准收業務參數
+}
+```
+
+### `app/app.dart` 殼職責
+
+- `class App extends StatelessWidget` + `const App({super.key})`
+- **不收業務參數**（router / observer / key 都不從建構式進來）
+- 內部子 widget 可以 `getIt<...>()` 取依賴
+- 只描述 widget 樹結構：Scopes → 全域 `BlocProvider` → `MaterialApp.router`
+- **不做副作用**（不 `start()`、不註冊 callback、不賦值 observer）
+
+```dart
+// ✅ const 殼，從 DI 取依賴
+class App extends StatelessWidget {
+  const App({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _AppScopes(
+      child: _AppBlocProviders(
+        child: _AppMaterialApp(),
+      ),
+    );
+  }
+}
+```
+
+```dart
+// ❌ 收業務參數
+class App extends StatelessWidget {
+  const App({required this.router, super.key});
+  final GoRouter router;
+  ...
+}
+```
+
+### `app/bootstrap/` 集中副作用
+
+凡是「對 SDK / 全域單例做設定」的動作，全部進 `app/bootstrap/`，由單一入口 `Future<void> bootstrap()` 對外暴露。包括：DI 初始化、SDK callback 註冊、`Bloc.observer` 賦值、global error handler、長駐 service `start()` 等。
+
+> 詳細的可做 / 禁止 / 灰色地帶清單與啟動順序，見 `infrastructure/bootstrap.md`（待後續補檔）。
+
+### `getIt` 邊界（本層級內）
+
+| 位置 | 允許？ | 說明 |
+|---|---|---|
+| `main.dart` | ❌ 禁用 | 入口三行守則已隱含；明文禁止避免日後鬆動 |
+| `app/bootstrap/` | ✅ 允許 | 副作用 setup 需要從容器取出 service / observer 實例 |
+| `app/app.dart` | ✅ 允許 | 殼層子 widget 需要接線全域依賴 |
+
+> 📌 `features/` / `core/` / 其他層的 `getIt` 規則不在本章節範圍。
+
+### 判斷某段 code 屬於哪一層
+
+- 不需要 `BuildContext`？→ 屬 bootstrap，不准放 widget。
+- SDK 全域 callback 註冊 / observer 賦值？→ 屬 bootstrap，不准放 main。
+- 描述 widget 樹結構？→ 屬 shell。
 
 ---
 
@@ -261,3 +360,4 @@ features/auth/presentation/
 - [`presentation-layer.md`](./presentation-layer.md) — Page / BLoC / Widget 結構
 - [`data-layer.md`](./data-layer.md) — DataSource / Repository / Mapper 結構
 - [`domain-layer.md`](./domain-layer.md) — Entity / UseCase / Repository 結構
+- [ADR-013: App Entry / Shell / Bootstrap Layering](../adr/013-app-entry-shell-bootstrap-layering.md) — 程式入口與 App 殼三層分離決策

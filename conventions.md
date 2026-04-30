@@ -8,6 +8,7 @@
 |---|---|
 | 理解專案架構 / 分層 / 依賴方向 | `architecture/overview.md` |
 | 新增 / 整理 feature 資料夾 | `architecture/folder-structure.md` |
+| 寫/改 `main.dart` / `app/app.dart` / `app/bootstrap/` | `architecture/folder-structure.md`（程式入口與 App 殼） |
 | 寫/改 Page、Widget | `architecture/presentation-layer.md` |
 | 寫/改 BLoC、Event、State、SideEffect | `patterns/state-management.md` |
 | 寫/改 UseCase、Entity、Value Object | `architecture/domain-layer.md` |
@@ -33,6 +34,7 @@
 - ❌ Hardcoded asset path —— 用 `Assets.*`（flutter_gen）
 - ❌ Domain 層 import Flutter —— 違反分層（→ [ADR-011](./adr/011-domain-zero-flutter-imports.md)）
 - ❌ Features 互相 import —— 透過 domain interface 解耦（→ [ADR-012](./adr/012-features-no-cross-import.md)）
+- ❌ `main.dart` 多於三行 / `app.dart` 收業務參數 / 副作用散落 widget 樹 —— 入口 / 殼 / bootstrap 三層分離（→ [ADR-013](./adr/013-app-entry-shell-bootstrap-layering.md)）
 - ❌ Hand-edit 生成檔（`*.freezed.dart`、`*.g.dart`、`*.config.dart`）
 - ✅ 命名：檔案 `snake_case`、class `PascalCase`、private `_camelCase`
 - ✅ 所有參數 named parameters（除了 Widget `key`）（→ [ADR-008](./adr/008-named-parameters-everywhere.md)）
