@@ -191,7 +191,7 @@ class App extends StatelessWidget {
 
 凡是「對 SDK / 全域單例做設定」的動作，全部進 `app/bootstrap/`，由單一入口 `Future<void> bootstrap()` 對外暴露。包括：DI 初始化、SDK callback 註冊、`Bloc.observer` 賦值、global error handler、長駐 service `start()` 等。
 
-> 詳細的可做 / 禁止 / 灰色地帶清單與啟動順序，見 `infrastructure/bootstrap.md`（待後續補檔）。
+> 詳細的可做 / 禁止 / 灰色地帶清單與啟動順序，見 [`infrastructure/bootstrap.md`](../infrastructure/bootstrap.md)。
 
 ### `getIt` 邊界（本層級內）
 
