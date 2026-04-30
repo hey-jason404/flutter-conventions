@@ -15,6 +15,7 @@
 | 5 | 命令式動詞屬於 SideEffect 而非 Event | [ADR-005](../adr/005-imperative-actions-as-side-effect.md) |
 | 6 | SideEffect 用 plain sealed class，禁 `@freezed` 與 `enum` | [ADR-006](../adr/006-side-effect-plain-sealed-class.md) |
 | 7 | BLoC 只依賴 domain UseCase，不依賴 Repository / DataSource | — |
+| 8 | BLoC / state / event / sideEffect 禁跨 feature import；BLoC 不依賴別的 BLoC | [ADR-014](../adr/014-features-cross-import-rules.md) |
 
 ---
 
@@ -339,6 +340,29 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
 **為什麼錯**：跳過 UseCase 層；UseCase 是業務邏輯封裝點（驗證、組合多 repository、補資料），跳過去後業務邏輯散在 BLoC handler 各處。
 
+### ❌ BLoC 跨 feature 取另一個 feature 的 BLoC
+
+```dart
+// ❌ cart feature 的 page 取 auth feature 的 LoginBloc
+import '../../../auth/presentation/login_page/bloc/login_bloc.dart';
+
+class CartPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final user = context.watch<LoginBloc>().state;    // ❌
+    // ...
+  }
+}
+```
+
+**為什麼錯**：BLoC 有 lifetime + `BlocProvider` scope，跨 feature 取對方 BLoC 會：
+
+1. **Runtime crash 風險**：`BlocProvider.of<LoginBloc>(context)` 在 widget 樹沒掛 auth provider 時直接拋
+2. **生命週期耦合**：對方 feature 的 BLoC 何時 init / close 不在自己控制範圍
+3. **測試地獄**：mock 一個 BLoC 比 mock 一個 UseCase 麻煩很多
+
+正解：跨 feature **取資料**走對方的 UseCase（[ADR-014](../adr/014-features-cross-import-rules.md) 允許跨 feature UseCase）；session 狀態走 `SessionContext`（在 `core/`）。
+
 ---
 
 ## 業務 outcome navigation
@@ -396,3 +420,4 @@ sealed class LoginState with _$LoginState {
 - [`error-handling.md`](./error-handling.md) — `Either<AppFailure, T>` 在 BLoC handler 的處理
 - [`code-generation.md`](./code-generation.md) — `freezed` codegen 規範
 - [ADR-001 ~ 006](../adr/) — BLoC 三件套相關決策
+- [ADR-014](../adr/014-features-cross-import-rules.md) — 跨 feature import 邊界
