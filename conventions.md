@@ -6,26 +6,26 @@
 
 | 你要做的事 | 必讀 |
 |---|---|
-| 理解專案架構 / 分層 / 依賴方向 | `architecture/overview.md` |
-| 新增 / 整理 feature 資料夾 | `architecture/folder-structure.md` |
-| 寫/改 `main.dart` / `app/app.dart` | `architecture/folder-structure.md`（程式入口與 App 殼） |
-| 寫/改 `app/bootstrap/`、設定啟動副作用 | `infrastructure/bootstrap.md` |
-| 寫/改 Page、Widget | `architecture/presentation-layer.md` |
-| 寫/改 BLoC、Event、State、SideEffect | `patterns/state-management.md` |
-| 寫/改 UseCase、Entity、Value Object | `architecture/domain-layer.md` |
-| 寫/改 Repository、DataSource、Mapper | `architecture/data-layer.md` |
-| 處理錯誤、Either、AppFailure | `patterns/error-handling.md` |
-| 觸發導航 | `patterns/navigation.md` |
-| Codegen（freezed / injectable / slang） | `patterns/code-generation.md` |
-| DI 註冊 | `architecture/dependency-injection.md` |
-| 網路 / API | `infrastructure/network.md` |
-| Session / 登入狀態 | `infrastructure/session.md` |
-| 全域設定（AppConfig） | `infrastructure/config.md` |
-| Platform 差異 | `infrastructure/platform.md` |
-| 命名 | `style/naming.md` |
-| 排版、import、async | `style/coding-style.md` |
-| 寫測試 | `patterns/testing.md` |
-| 加套件 | `packages.md` |
+| 理解專案架構 / 分層 / 依賴方向 | [`architecture/overview.md`](./architecture/overview.md) |
+| 新增 / 整理 feature 資料夾 | [`architecture/folder-structure.md`](./architecture/folder-structure.md) |
+| 寫/改 `main.dart` / `app/app.dart` | [`architecture/folder-structure.md`](./architecture/folder-structure.md)（程式入口與 App 殼） |
+| 寫/改 `app/bootstrap/`、設定啟動副作用 | [`infrastructure/bootstrap.md`](./infrastructure/bootstrap.md) |
+| 寫/改 Page、Widget | [`architecture/presentation-layer.md`](./architecture/presentation-layer.md) |
+| 寫/改 BLoC、Event、State、SideEffect | [`patterns/state-management.md`](./patterns/state-management.md) |
+| 寫/改 UseCase、Entity、Value Object | [`architecture/domain-layer.md`](./architecture/domain-layer.md) |
+| 寫/改 Repository、DataSource、Mapper | [`architecture/data-layer.md`](./architecture/data-layer.md) |
+| 處理錯誤、Either、AppFailure | [`patterns/error-handling.md`](./patterns/error-handling.md) |
+| 觸發導航 | [`patterns/navigation.md`](./patterns/navigation.md) |
+| Codegen（freezed / injectable / slang） | [`patterns/code-generation.md`](./patterns/code-generation.md) |
+| DI 註冊 | [`architecture/dependency-injection.md`](./architecture/dependency-injection.md) |
+| 網路 / API | [`infrastructure/network.md`](./infrastructure/network.md) |
+| Session / 登入狀態 | [`infrastructure/session.md`](./infrastructure/session.md) |
+| 全域設定（AppConfig） | [`infrastructure/config.md`](./infrastructure/config.md) |
+| Platform 差異 | [`infrastructure/platform.md`](./infrastructure/platform.md) |
+| 命名 | [`style/naming.md`](./style/naming.md) |
+| 排版、import、async | [`style/coding-style.md`](./style/coding-style.md) |
+| 寫測試 | [`patterns/testing.md`](./patterns/testing.md) |
+| 加套件 | [`packages.md`](./packages.md) |
 
 ## 不可妥協（永遠適用，不用查檔）
 
