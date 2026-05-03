@@ -241,7 +241,49 @@ Text('Invalid credentials');
 2. 字串散落 widget code，QA / PM 改文案要 grep 全 repo
 3. 編譯期不擋拼錯（slang typed access 會擋）
 
-slang config 在 `slang.yaml` / `pubspec.yaml`，源資料放 `assets/i18n/`，跑 `build_runner` 產出 `translations.g.dart`。
+### File 位置
+
+```text
+i18n/                         # source 文案，與 lib/ 同層（Flutter 專案根目錄下）
+├── en.i18n.json              # base locale
+└── {locale}.i18n.json        # 其他語系（zh / th / vi 等）
+
+lib/generated/localization/
+└── translations.g.dart       # slang 產出，**禁止手改**
+```
+
+File 命名一律 `{locale}.i18n.json`（locale 用 Flutter `Locale` 對應的 short code，如 `en`、`zh`、`th`、`vi`）。
+
+### `slang.yaml` config
+
+slang 行為由 Flutter 專案根目錄的 `slang.yaml` 控制（最小範例）：
+
+```yaml
+input_directory: i18n
+input_file_pattern: .i18n.json
+output_directory: lib/generated/localization
+output_file_name: translations.g.dart
+flutter_integration: true
+locale_handling: true
+translation_class_visibility: public
+```
+
+完整 option 見 [slang 官方文件](https://pub.dev/packages/slang)。
+
+### 加新語系流程
+
+| 步驟 | 動作 |
+|---|---|
+| 1 | `i18n/{new_locale}.i18n.json` 加新檔，key 結構與 base locale 對齊 |
+| 2 | 跑 `dart run build_runner build --delete-conflicting-outputs` |
+| 3 | `MaterialApp` 用 slang 產出的 `AppLocaleUtils.supportedLocales` 與對應 delegates |
+| 4 | 視需要在 `AppConfig` runtime field 開放 `locale` 切換 UI |
+
+### 規則
+
+- **新增的 locale file 必須與 base locale key 結構對齊**；slang 會檢查 missing key
+- **字串內插用 slang named arg**（`'Hello {name}'` + `t.greeting(name: 'A')`），不在 widget 用 Dart 字串拼接（如 `'${context.t.x} world'`）
+- **不要手改 `translations.g.dart`**（一般 `*.g.dart` 規則同樣適用）
 
 ---
 
