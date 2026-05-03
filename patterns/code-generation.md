@@ -254,6 +254,49 @@ lib/generated/localization/
 
 File 命名一律 `{locale}.i18n.json`（locale 用 Flutter `Locale` 對應的 short code，如 `en`、`zh`、`th`、`vi`）。
 
+### File 結構
+
+JSON 用**巢狀結構**按 domain 組織 key，避免單檔平面化造成命名衝突與難 grep：
+
+```json
+// i18n/en.i18n.json
+{
+  "popup": {
+    "title": {
+      "loggedOut": "Logged out",
+      "error": "Error"
+    },
+    "message": {
+      "autoLogout": "You have been inactive for ${minutes} minutes."
+    },
+    "button": {
+      "ok": "OK",
+      "cancel": "Cancel"
+    }
+  },
+  "login": {
+    "title": "Login",
+    "error": {
+      "invalidCredentials": "Invalid username or password"
+    }
+  },
+  "statusCode": {
+    "GNR00001": "Success",
+    "GNR00003": "General Error (${errorCode}). Please reload page and try again."
+  }
+}
+```
+
+對應 slang 產出 typed access：
+
+```dart
+context.t.popup.title.loggedOut
+context.t.popup.message.autoLogout(minutes: '5')
+context.t.statusCode.GNR00003(errorCode: 'X')
+```
+
+巢狀分組原則：依**畫面 / 功能 domain** 分（`popup`、`login`、`statusCode`、`tabBar`...），不要把所有 key 拉到 root level。
+
 ### `slang.yaml` config
 
 slang 行為由 Flutter 專案根目錄的 `slang.yaml` 控制（最小範例）：
@@ -270,6 +313,32 @@ translation_class_visibility: public
 
 完整 option 見 [slang 官方文件](https://pub.dev/packages/slang)。
 
+### 文案參數
+
+字串內插用 slang `string_interpolation` 規範。slang 預設 `dart` 模式 → `${name}`：
+
+```json
+{
+  "greeting": "Hello ${name}",
+  "remaining": "${count} attempts left",
+  "withFallback": "Code (${errorCode})"
+}
+```
+
+對應 slang 產出 typed callable：
+
+```dart
+context.t.greeting(name: 'Alice')
+context.t.remaining(count: '3')
+```
+
+> 📌 三種 interpolation 模式可在 `slang.yaml` 切換：`dart`（預設，`${name}`）、`braces`（`{name}`）、`double_braces`（`{{name}}`）。**整個專案必須選一種、寫進 `slang.yaml`、所有 i18n file 統一**。混用會 codegen 失敗。
+
+參數命名：
+
+- snake_case 或 camelCase 皆可，**整 repo 一致**
+- 不用 Dart keyword（`for`、`is`、`null`、`new`、`class` 等）當參數名
+
 ### 加新語系流程
 
 | 步驟 | 動作 |
@@ -282,7 +351,9 @@ translation_class_visibility: public
 ### 規則
 
 - **新增的 locale file 必須與 base locale key 結構對齊**；slang 會檢查 missing key
-- **字串內插用 slang named arg**（`'Hello {name}'` + `t.greeting(name: 'A')`），不在 widget 用 Dart 字串拼接（如 `'${context.t.x} world'`）
+- **巢狀分組依 domain**，避免單檔平面化（不要把 `login.title` / `popup.title` 都拉到 root level）
+- **文案參數遵守 slang `string_interpolation` 模式**（見「文案參數」）；不在 widget 用 Dart 字串拼接（如 `'${context.t.x} world'`）
+- **參數命名整 repo 一致**（snake_case 或 camelCase 擇一）
 - **不要手改 `translations.g.dart`**（一般 `*.g.dart` 規則同樣適用）
 
 ---
