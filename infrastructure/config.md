@@ -126,6 +126,67 @@ class GetApiBaseUrlUseCase {
 
 ---
 
+## Env file source（build-time）
+
+`EnvProviderImpl` 的 `String.fromEnvironment(...)` 值，build 時由 `--dart-define-from-file=env/{flavor}.json` 餵入。File 放在 Flutter 專案根目錄下的 `env/`：
+
+```text
+env/
+├── dev.json                # 開發環境
+├── staging.json            # 測試環境
+└── prod.json               # 正式環境
+```
+
+### File 格式
+
+```json
+// env/dev.json
+{
+  "API_BASE_URL": "https://api.dev.example.com",
+  "APP_VERSION": "1.0.0",
+  "FLAVOR": "dev"
+}
+```
+
+JSON key 一律大寫 `SCREAMING_SNAKE_CASE`，與 `String.fromEnvironment(KEY)` 取的 key 同名。
+
+> 📌 為避免 key 字串散落各處，可在 `core/env/env_keys.dart` 集中常數：
+>
+> ```dart
+> abstract final class EnvKeys {
+>   static const String apiBaseUrl = 'API_BASE_URL';
+>   static const String appVersion = 'APP_VERSION';
+>   static const String flavor = 'FLAVOR';
+> }
+> ```
+
+### Build 指令
+
+```bash
+flutter run --dart-define-from-file=env/dev.json
+flutter build apk --dart-define-from-file=env/prod.json
+flutter build ipa --dart-define-from-file=env/prod.json
+```
+
+### 加新 env key 流程
+
+| 步驟 | 動作 |
+|---|---|
+| 1 | `env/*.json` 各 flavor file 都加 key（值依環境填）|
+| 2 | （可選）`core/env/env_keys.dart` 加常數 |
+| 3 | `EnvProvider` interface 加 getter |
+| 4 | `EnvProviderImpl` 加 `String.fromEnvironment(...)` 對應行 |
+| 5 | `AppConfig` 加 `final` 欄位 + 在建構式從 `envProvider` 取值 |
+| 6 | 跑 `build_runner` |
+
+### 規則
+
+- **`env/*.json` 各 flavor file 必須 key set 一致** — 避免 prod build 漏 key 才 runtime 才炸
+- **`env/*.json` 若含敏感值（API key、secret）** → git ignore，提供 `env/example.json` 作為新人 onboard 範本
+- 不要把 build-time env 跟 runtime config 混淆 — runtime config 透過 `AppConfig.update()` 改，不從 env file 來
+
+---
+
 ## 修改 runtime config
 
 ```dart
