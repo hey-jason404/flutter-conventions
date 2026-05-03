@@ -128,27 +128,70 @@ class GetApiBaseUrlUseCase {
 
 ## Env file source（build-time）
 
-`EnvProviderImpl` 的 `String.fromEnvironment(...)` 值，build 時由 `--dart-define-from-file=env/{flavor}.json` 餵入。File 放在 Flutter 專案根目錄下的 `env/`：
+`EnvProviderImpl` 的 `String.fromEnvironment(...)` 值，build 時由 `--dart-define-from-file=...` 餵入合併後的扁平 JSON。Source files 放在 Flutter 專案根目錄下的 `env/`：
 
 ```text
 env/
 ├── dev.json                # 開發環境
 ├── staging.json            # 測試環境
-└── prod.json               # 正式環境
+├── prod.json               # 正式環境
+└── example.json            # 模板（不 gitignored，新人 onboard 用）
 ```
 
 ### File 格式
 
+env file 用 **3-section 巢狀結構**，依平台分流：
+
 ```json
 // env/dev.json
 {
-  "API_BASE_URL": "https://api.dev.example.com",
-  "APP_VERSION": "1.0.0",
-  "FLAVOR": "dev"
+  "common": {
+    "API_BASE_URL": "https://api.dev.example.com",
+    "APP_VERSION": "1.0.0",
+    "FLAVOR": "dev"
+  },
+  "android": {
+    "PLATFORM_CHANNEL_ID": "3",
+    "APP_OS_TYPE": "1"
+  },
+  "ios": {
+    "PLATFORM_CHANNEL_ID": "4",
+    "APP_OS_TYPE": "2"
+  }
 }
 ```
 
-JSON key 一律大寫 `SCREAMING_SNAKE_CASE`，與 `String.fromEnvironment(KEY)` 取的 key 同名。
+| Section | 用途 | 必須? |
+|---|---|---|
+| `common` | 跨平台通用 key | 可省略 |
+| `android` | Android 專屬 + 可 override `common` 同名 key | 可省略 |
+| `ios` | iOS 專屬 + 可 override `common` 同名 key | 可省略 |
+
+**合併優先權**：`platform > common`。同名 key 在 `common` 與 `android`/`ios` 同時存在時，平台 section 覆寫 `common`。
+
+JSON key 一律大寫 `SCREAMING_SNAKE_CASE`，與 `String.fromEnvironment(KEY)` 取的 key 同名（merge 後是扁平結構）。
+
+### File 命名
+
+`env/{flavor}.json`：
+
+| 規則 | 說明 |
+|---|---|
+| Flavor 名稱與 Flutter `--flavor=...` 對齊 | `flutter run --flavor=dev` ↔ `env/dev.json`；不允許錯位 |
+| 一律小寫；多字詞用 kebab-case | `dev`、`uat`、`prod`、`staging`、`prod-cn`（罕見）|
+| 一個 flavor 一個 file | 不在單一檔內混 flavor（不要 `env/all.json` 含子 section）|
+| 模板用 `env/example.json` | 提供 key 集骨架、不含敏感值、**不 gitignore**；新人 onboard 用 |
+
+```text
+// ❌ 不允許
+env/dev.env                 // 多餘 / 錯誤副檔名
+env/dev.config.json         // 多餘 suffix
+env/Dev.json                // 大寫
+env/dev_v2.json             // 版本後綴（環境變動改值不該分檔）
+env/dev-android.json        // 平台分檔（平台差異走檔內 android/ios section）
+```
+
+> 📌 Flutter `--flavor` 跟 Android product flavor / iOS schemes 是同一條軸（build script 通常用同一個 `$FLAVOR` 變數）。env file 名跟著這條軸命名，避免「build 用 dev、env 用 development」這種歧義。
 
 > 📌 為避免 key 字串散落各處，可在 `core/env/env_keys.dart` 集中常數：
 >
@@ -160,28 +203,46 @@ JSON key 一律大寫 `SCREAMING_SNAKE_CASE`，與 `String.fromEnvironment(KEY)`
 > }
 > ```
 
-### Build 指令
+### Build-time 合併
+
+`--dart-define-from-file` 不認識巢狀結構，build pipeline 必須先把 `{common, android/ios}` 合併成扁平 JSON 再餵入。常見做法是寫一個合併 script，依目標 platform 組出 merged JSON 輸出到 build artifact 路徑（例：`.dart_tool/merged/<flavor>.<platform>.json`，已被 Flutter 預設 `.gitignore`）：
 
 ```bash
-flutter run --dart-define-from-file=env/dev.json
-flutter build apk --dart-define-from-file=env/prod.json
-flutter build ipa --dart-define-from-file=env/prod.json
+# 概念示意（merge script 自行實作）
+MERGED_JSON=$(dart run scripts/merge_env.dart dev android)
+flutter run \
+    --flavor=dev \
+    --target=lib/main.dart \
+    --dart-define-from-file="$MERGED_JSON"
 ```
+
+合併契約：
+
+| 項目 | 規則 |
+|---|---|
+| Input | `env/{flavor}.json`（巢狀 3-section）|
+| Output | 扁平 single-level JSON（給 `--dart-define-from-file` 用）|
+| 優先權 | `platform > common`（同名 key 平台覆寫）|
+| Dart-define 注入時機 | Compile-time constant（修改後需重 build）|
+
+> 📌 Merge script 是專案實作細節（不規範強制）；只要符合上述契約即可。可用 Dart script、shell script、Makefile target、CI step 等實作。
 
 ### 加新 env key 流程
 
 | 步驟 | 動作 |
 |---|---|
-| 1 | `env/*.json` 各 flavor file 都加 key（值依環境填）|
-| 2 | （可選）`core/env/env_keys.dart` 加常數 |
-| 3 | `EnvProvider` interface 加 getter |
-| 4 | `EnvProviderImpl` 加 `String.fromEnvironment(...)` 對應行 |
-| 5 | `AppConfig` 加 `final` 欄位 + 在建構式從 `envProvider` 取值 |
-| 6 | 跑 `build_runner` |
+| 1 | 判斷 key 屬於 `common` / `android` / `ios` 哪個 section（看是否平台差異）|
+| 2 | `env/*.json` 各 flavor file 對應 section 加 key（同 section 同 key set 一致）|
+| 3 | （可選）`core/env/env_keys.dart` 加常數 |
+| 4 | `EnvProvider` interface 加 getter |
+| 5 | `EnvProviderImpl` 加 `String.fromEnvironment(...)` 對應行 |
+| 6 | `AppConfig` 加 `final` 欄位 + 在建構式從 `envProvider` 取值 |
+| 7 | 跑 `build_runner` |
 
 ### 規則
 
-- **`env/*.json` 各 flavor file 必須 key set 一致** — 避免 prod build 漏 key 才 runtime 才炸
+- **同 section 內各 flavor file 的 key set 必須一致** — 避免某 flavor build 漏 key 才 runtime 炸
+- **跨 section 不要重複 key**（除非刻意 override `common`）；同 key 同時出現在 `android` 與 `ios` 而值相同 → 應移到 `common`
 - **`env/*.json` 若含敏感值（API key、secret）** → git ignore，提供 `env/example.json` 作為新人 onboard 範本
 - 不要把 build-time env 跟 runtime config 混淆 — runtime config 透過 `AppConfig.update()` 改，不從 env file 來
 
