@@ -28,9 +28,10 @@ lib/
 │   ├── bootstrap/                          # 啟動副作用集中地（→ ADR-013）
 │   │   ├── app_bootstrap.dart              # 對外唯一入口：bootstrap()
 │   │   └── {sdk}_bootstrap.dart            # 各 SDK / 副作用一檔
-│   └── di/
-│       ├── injection_container.dart        # GetIt instance + @InjectableInit
-│       └── injection_container.config.dart # generated, do not edit
+│   ├── di/
+│   │   ├── injection_container.dart        # GetIt instance + @InjectableInit
+│   │   └── injection_container.config.dart # generated, do not edit
+│   └── {shell_name}/                       # 視需要：跨 feature UI shell（→ 下節「App 殼 sub-folders」）
 │
 ├── core/                               # 跨 feature 共用基礎設施
 │   ├── config/                         # AppConfig SSOT
@@ -208,6 +209,74 @@ class App extends StatelessWidget {
 - 不需要 `BuildContext`？→ 屬 bootstrap，不准放 widget。
 - SDK 全域 callback 註冊 / observer 賦值？→ 屬 bootstrap，不准放 main。
 - 描述 widget 樹結構？→ 屬 shell。
+
+---
+
+## App 殼 sub-folders（跨 feature UI 殼）
+
+`app.dart` 本身只是 const 殼（[ADR-013](../adr/013-app-entry-shell-bootstrap-layering.md)）：`MaterialApp` / Scopes / 全域 `BlocProvider` 結構而已。中大型 App 常需要更具體的「跨 feature 殼」承載：
+
+- **Tab navigation shell**：bottom nav + AppBar slot + body，依 session 過濾可見 tab、登入態切換預設 tab
+- **App-level overlay shell**：global loading / snackbar / failure dialog catalog / 路由切換（session 過期、無網路、維護中）/ auto-logout 倒數
+- **特定 navigation pattern shell**：side drawer + content、master-detail 等
+
+這類 shell **業務上有自己的 page-level state**，命名上自成 capability，既不屬於某一個 feature（會造成 features 互相 import shell，違反 [ADR-014](../adr/014-features-cross-import-rules.md)），也不該整包塞進 `app.dart`（殼會膨脹得不可讀）。
+
+### 解法：在 `app/` 下開 shell folder
+
+```text
+app/
+├── app.dart                          # const 殼（不變，→ ADR-013）
+├── bootstrap/                        # 副作用（不變）
+├── di/                               # DI（不變）
+└── {shell_name}/                     # 跨 feature shell
+    ├── {shell_name}.dart             # shell widget 入口
+    ├── bloc/                         # 視需要（有狀態才建）
+    │   ├── {shell_name}_bloc.dart
+    │   ├── {shell_name}_event.dart
+    │   ├── {shell_name}_state.dart
+    │   └── {shell_name}_side_effect.dart
+    └── widgets/                      # 視需要（拆出子 widget 才建）
+        └── {widget_name}_widget.dart
+```
+
+結構與下方 [Page 結構](#page-結構) 對齊（page-folder convention）。視業務需要可加更多 sub-folder（例：`failure/` 失敗 routing/catalog、`dispatcher/` 對 features 暴露的 facade interface），但保持 page-folder 主軸。
+
+### 與 `app.dart` 的關係
+
+- `app.dart` 仍**不收業務參數**，仍只描述 widget 樹結構（ADR-013 不變）
+- shell widget 由 `app.dart` 內部組裝（透過 `MaterialApp.builder` 包 router child，或 router shell route）
+- shell 自己的 BLoC 由 shell 上方的 `BlocProvider` 提供，shell 內部 widget 透過 `context.read` 取用
+
+### Shell vs Feature page 區分
+
+| 維度 | Feature page | Shell |
+|---|---|---|
+| 屬於 | 單一 feature 的業務功能 | 跨 feature 的 UI 結構 / 全域行為 |
+| 位置 | `features/{name}/presentation/{page}/` | `app/{shell_name}/` |
+| BLoC 命名 | `{page}Bloc` | `{shell}Bloc` |
+| Routing | router 表項 | `MaterialApp.builder` 或 router shell route |
+| 對 features 對外 API | 無（內部使用） | 視需要開 facade interface 給 features |
+
+### Cross-import 規則
+
+跨 feature import 規則（[ADR-014](../adr/014-features-cross-import-rules.md)）對 shell **同樣適用**：features 不可 import shell 的 BLoC / state / event / sideEffect 本體。若需要觸發 shell 行為（例如要 shell 顯示 global loading、推 failure dialog），shell 自己對外暴露 facade interface（例：`{Shell}Dispatcher`），features 依賴該 interface 而非 shell BLoC 本體。
+
+### 何時開 vs 何時不開
+
+- **開**：跨多個 feature 共用一塊 UI / 行為，且自身有 page-level state（tab 過濾、global loading token 計數、auto-logout 計時等）
+- **不開**：純 widget tree 結構描述（仍屬 `app.dart`）；單一 feature 內部使用（仍屬 `features/{name}/presentation/`）；無業務的 framework wrapper（屬 `core/{capability}/`）
+
+```dart
+// ✅ 適合 shell
+class TabShellBloc extends Bloc<TabShellEvent, TabShellState> { ... }   // app/tab_shell/bloc/
+```
+
+```dart
+// ❌ 不適合 shell
+class LoginBloc extends Bloc<LoginEvent, LoginState> { ... }            // 屬 features/login/
+mixin LifecycleObserver { ... }                                         // 屬 core/{capability}/（無業務）
+```
 
 ---
 

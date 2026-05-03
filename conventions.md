@@ -10,6 +10,7 @@
 | 新增 / 整理 feature 資料夾 | `architecture/folder-structure.md` |
 | 寫/改 `main.dart` / `app/app.dart` | `architecture/folder-structure.md`（程式入口與 App 殼） |
 | 寫/改 `app/bootstrap/`、設定啟動副作用 | `infrastructure/bootstrap.md` |
+| 寫/改 `app/{shell}/`（tab shell、app-level overlay 等跨 feature 殼） | `architecture/folder-structure.md`（App 殼 sub-folders） |
 | 寫/改 Page、Widget | `architecture/presentation-layer.md` |
 | 寫/改 BLoC、Event、State、SideEffect | `patterns/state-management.md` |
 | 寫/改 UseCase、Entity、Value Object | `architecture/domain-layer.md` |
