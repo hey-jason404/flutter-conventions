@@ -81,6 +81,12 @@
 |---|---|---|
 | `logger` | App-level logger | 取代 `print()` / `debugPrint()` |
 
+### 媒體 / 圖片
+
+| 套件 | 用途 | 備註 |
+|---|---|---|
+| `cached_network_image` | 網路圖片載入 + disk cache | 包在下游 repo 的 `lib/ui_kit/components/images/ui_network_image.dart` 提供統一入口；**禁止直接呼叫 framework 內建 `Image.network`**（會打破 cache 一致性）（→ [ADR-015](./adr/015-cached-network-image-with-wrapper.md)）|
+
 ---
 
 ## 加新套件的流程

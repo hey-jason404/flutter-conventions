@@ -22,3 +22,4 @@
 | [012](./012-features-no-cross-import.md) | Features Never Cross-Import | Superseded by [014](./014-features-cross-import-rules.md) | architecture |
 | [013](./013-app-entry-shell-bootstrap-layering.md) | App Entry / Shell / Bootstrap Layering | Accepted | architecture |
 | [014](./014-features-cross-import-rules.md) | Features Cross-Import Rules | Accepted | architecture |
+| [015](./015-cached-network-image-with-wrapper.md) | Cached Network Image with Wrapper Entry | Accepted | media |
